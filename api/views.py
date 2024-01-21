@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from random import choice
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -17,11 +18,9 @@ def number(request):
 
 @api_view(['GET'])
 def state_view(request):
-    data = [{'id': 1, 'state': 'flow'},
-            {'id': 2, 'state': 'stressed'},
-            {'id': 3, 'state': 'disengaged'},
-            {'id': 4, 'state': 'flow'},
-            {'id': 5, 'state': 'sensor issues'}]
+    STATES = ['flow', 'stressed', 'disengaged', 'sensor issues']
+    IDS = range(1, 11)
+    random_states = [{'id': id, 'state': choice(STATES)} for id in IDS]
     
-    serializer = StateSerializer(data, many=True)
+    serializer = StateSerializer(random_states, many=True)
     return Response(serializer.data)
