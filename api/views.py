@@ -4,7 +4,7 @@ from random import choice
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from dataprocessing.services import fetch_and_process_number
+from dataprocessing.services import append_clickstream, fetch_and_process_number, get_newest_clickstream_setence
 from .serializers import StateSerializer
 
 @api_view(['GET'])
@@ -24,3 +24,12 @@ def state_view(request):
     
     serializer = StateSerializer(random_states, many=True)
     return Response(serializer.data)
+
+@api_view(['GET', 'POST'])
+def add_clickstream(request):
+    if request.method == 'POST':
+        append_clickstream(request.data)
+        return Response({'status': 'success'})
+    
+    data = get_newest_clickstream_setence()
+    return Response({'sentence': data})
