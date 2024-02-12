@@ -6,11 +6,26 @@ class EmpaticaConnection:
     """ This class is responsible for the connection to the Empatica E4 device. """
 
     # if connecting to more empaticas, we need several sockets
-    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     buffer_size = 4096
     server_address = '127.0.0.1'
     port_number = 28000
+
+    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     socket_connected = False
+
+    subscribers = {"EDA": [], "IBI": [], "TEMP": [], "HR": []}
+
+    def add_subscriber(self, data_handler, requested_data):
+        """
+        Adds a handler as a subscriber for a specific raw data
+
+        :param data_handler: a data handler for a specific measurement that subscribes to a specific raw data
+        :type data_handler: DataHandler
+        :param requested_data: The specific raw data that the data handler subscribes to
+        :type requested_data: str
+        """
+        assert requested_data in self.subscribers.keys()
+        self.subscribers[requested_data].append(data_handler)
 
     def connect(self):
         """ Connect to the Empatica E4 device."""
@@ -85,16 +100,28 @@ class EmpaticaConnection:
                 for i in range(len(samples) - 1):
                     name = samples[i].split()[0]
                     data = float(samples[i].split()[2].replace(',', '.'))
-                    # if name == "E4_Temperature":
-                    #     self._send_data_to_subscriber("TEMP", data)
-                    # elif name == "E4_Gsr":
-                    #     self._send_data_to_subscriber("EDA", data)
-                    # elif name == "E4_Hr":
-                    #     self._send_data_to_subscriber("HR", data)
-                    # elif name == "E4_Ibi":
-                    #     self._send_data_to_subscriber("IBI", data)
+                    if name == "E4_Temperature":
+                        self._send_data_to_subscriber("TEMP", data)
+                    elif name == "E4_Gsr":
+                        self._send_data_to_subscriber("EDA", data)
+                    elif name == "E4_Hr":
+                        self._send_data_to_subscriber("HR", data)
+                    elif name == "E4_Ibi":
+                        self._send_data_to_subscriber("IBI", data)
 
             except socket.timeout:
                 print("Socket timeout, reconnecting in 10 sec...")
                 time.sleep(10)
                 return self.connect()
+            
+    def _send_data_to_subscriber(self, name, data):
+        """
+        Sends the specified data to all handlers that are subscribing to it
+
+        :param name: The name of the data point we are sending
+        :type name: str
+        :param data: The datapoint we are sending
+        :type data: float
+        """
+        for handler in self.subscribers[name]:
+            handler.add_data_point(data)
