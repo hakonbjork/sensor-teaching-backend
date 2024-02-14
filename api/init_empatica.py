@@ -1,12 +1,19 @@
 from .empatica import EmpaticaConnection
 from dataprocessing.handler import DataHandler
 from dataprocessing.measurements import (compute_arousal, compute_engagement, compute_emotional_regulation, compute_entertainment, compute_stress)
+from dataprocessing import states
 
-def init_backend():
-    """ Connects to empatica and starts the master backend"""
+started = False
+def init_empatica():
+    global started
 
-    print("starting master backend...")
+    """ Connects to empatica and begnins the measurements """
+
+    if started:
+        return
+    print("starting empatica measurements...")
     connection = EmpaticaConnection()
+    started = True
 
     # Instantiate the arousal data handler and subscribe to the api
     arousal_handler = DataHandler(
@@ -22,6 +29,7 @@ def init_backend():
     engagement_handler = DataHandler(
         measurement_func=compute_engagement,
         measurement_path="engagement.csv",
+        measurement_type="engagement",
         window_length=121,
         window_step=40,
         baseline_length=161,
@@ -56,6 +64,7 @@ def init_backend():
     stress_handler = DataHandler(
         measurement_func=compute_stress,
         measurement_path="stress.csv",
+        measurement_type="stress",
         window_length=10,
         window_step=10,
         baseline_length=30

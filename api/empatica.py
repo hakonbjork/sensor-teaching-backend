@@ -61,8 +61,13 @@ class EmpaticaConnection:
         print(connected_response.decode('utf-8'))
 
         if ("R device_connect OK" in connected_response.decode('utf-8')):
-            # do we need to add the PAUSE ON command here?
+            self.socket.send("pause ON\r\n".encode())
+            self.socket.recv(self.buffer_size)
             print("successfully connected to empatica")
+        else:
+            print ("could not connect to empatica, trying again after 10 seconds")
+            time.sleep(10)
+            return self.connect()
 
     def _subscribe_to_socket(self):
             """ Subscribe to the data on the socket connection """
@@ -78,7 +83,8 @@ class EmpaticaConnection:
             self.socket.send(("device_subscribe " + 'ibi' + " ON\r\n").encode())
             self.socket.recv(self.buffer_size)
 
-            # if we did PAUSE ON, do PAUSE OFF here
+            self.socket.send("pause OFF\r\n".encode())
+            self.socket.recv(self.buffer_size)
 
     def _stream(self):
         """ Continuously receive data from the socket connection """

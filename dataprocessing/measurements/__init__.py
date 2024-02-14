@@ -4,3 +4,4 @@ from .emotional_regulation import \
 from .engagement import compute_engagement
 from .entertainment import compute_entertainment
 from .stress import compute_stress
+from .emotion import compute_emotion

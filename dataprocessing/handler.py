@@ -1,8 +1,9 @@
 from collections import deque
 
 import numpy as np
+import datetime
 
-from dataprocessing import util
+from dataprocessing import util, states
 
 class DataHandler:
     """
@@ -11,7 +12,7 @@ class DataHandler:
     preprocessing the data,
     and calculating measurements from the data
     """
-    def __init__(self, measurement_func=None, measurement_path=None,
+    def __init__(self, measurement_func=None, measurement_path=None, measurement_type=None,
                  window_length=None, window_step=None,
                  baseline_length=None, header_features=[]):
         """
@@ -36,6 +37,7 @@ class DataHandler:
         self.window_length = window_length
         self.measurement_func = measurement_func
         self.measurement_path = measurement_path
+        self.measurement_type = measurement_type
         self.baseline_length = baseline_length
         self.baseline = None
         self.header_features = header_features
@@ -65,8 +67,20 @@ class DataHandler:
         if self.data_counter % self.window_step == 0 and len(self.data_queue) == self.window_length:
             measurement = util.to_list(self.measurement_func(list(self.data_queue)))
             normalized_measurement = np.dot(measurement, np.reciprocal(self.baseline)) / len(self.baseline)
+            # print(f"measurement: {measurement}, normalized_measurement: {normalized_measurement}, path: {self.measurement_path}")
             # could be useful to do this, or maybe json
-            print("bla bla bla, writing to csv")
+            # finne ut hvordan sende til frontend, midlertidig lagring her kan være bare å ha til en liste over hva alle statesene er
+            # det som må lagres over tid skal uansett gjøre det på en eller annen måte
+            # evt csv som de gjør her da men tror ikke vi trenger så "mye" lagring
+
+            # print(f"measurement: {measurement}, path: {self.measurement_path}, normalized_measurement: {normalized_measurement}")
+            print(f"{self.measurement_type}: {normalized_measurement}")
+            # states.states[self.measurement_type] = normalized_measurement
+
+            if (self.measurement_type == "engagement" or self.measurement_type == "stress"): # and normalized_measurement > 1.25:
+                print(f"{self.measurement_type}: {normalized_measurement}")
+                states.MeasurementStates.set_state_from_normalized_measurement(self.measurement_type, normalized_measurement)
+            
             # if len(measurement) == 1:
             #     util.write_csv(self.measurement_path, [normalized_measurement])
             # else:
