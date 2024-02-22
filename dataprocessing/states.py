@@ -1,3 +1,6 @@
+import csv
+import os
+
 # from camera we can get neutral, angry, fear, happy, sad, surprise, disgust (?)
 
 class MeasurementStates:
@@ -6,7 +9,7 @@ class MeasurementStates:
     SWITCH_POINT = 1
 
     # initial states starts with False
-    states = {
+    _states = {
         "neutral": False,
         "angry": False,
         "fear": False,
@@ -22,15 +25,31 @@ class MeasurementStates:
 
     @classmethod
     def set_state_from_normalized_measurement(cls, type, nm):
-        cls.states[type] = float(nm) > cls.SWITCH_POINT
-        print(cls.states)
+        cls._states[type] = float(nm) > cls.SWITCH_POINT
+        MeasurementStates.write_state_to_csv()
 
     @classmethod
     def set_state_from_emotion(cls, emotion):
-        for e in cls.emotions:
-            cls.states[e] = False
-        cls.states[emotion] = True
-        print(cls.states)
+        # for e in cls.emotions:
+        #     cls._states[e] = False
+        cls._states[emotion] = True
+        MeasurementStates.write_state_to_csv()
+    
+    @classmethod
+    def write_state_to_csv(cls):
+        filepath = 'data/states.csv'
+        file_exists = os.path.exists(filepath) and os.path.getsize(filepath) > 0
+
+        with open(filepath, 'a', newline='') as csvfile:
+            fieldnames = list(cls._states.keys())
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            # Write the header only if the file did not exist or was empty
+            if not file_exists:
+                writer.writeheader()
+
+            # Write the updated states as a new row
+            writer.writerow(cls._states)
 
 
     """ 

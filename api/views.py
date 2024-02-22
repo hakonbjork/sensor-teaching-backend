@@ -1,9 +1,11 @@
 from django.shortcuts import render
 
 import random
+import csv
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from dataprocessing.measurements.engagement import compute_engagement
+from dataprocessing.states import MeasurementStates
 
 from dataprocessing.services import append_clickstream, fetch_and_process_number, get_newest_clickstream_setence
 from dataprocessing.util import read_from_csv
@@ -58,3 +60,31 @@ def get_computed_engagement(request):
     print(f"Number of peaks: {nr_peaks}")
     print(f"Area under curve: {auc}")
     return Response({'amplitude': amplitude, 'nr_peaks': nr_peaks, 'auc': auc})
+
+# Endre noe på denne?
+@api_view(['GET'])
+def get_real_state(request):
+    filepath = 'data/states.csv'  # Path to your CSV file
+    try:
+        # Initialize an empty dictionary to hold the last row data
+        last_row_data = {}
+        # Open the CSV file and read the last row
+        with open(filepath, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                last_row_data = row  # This will end up being the last row
+        
+        # Check if last_row_data is still empty, which means the file was empty
+        if not last_row_data:
+            return Response({"error": "No data found in CSV file."}, status=404)
+        
+        # Convert values from strings to appropriate types (boolean in this case)
+        for key in last_row_data:
+            last_row_data[key] = True if last_row_data[key].lower() == 'true' else False
+        
+        return Response(last_row_data)
+    except FileNotFoundError:
+        return Response({"error": "CSV file not found."}, status=404)
+    except Exception as e:
+        # Generic error handling
+        return Response({"error": str(e)}, status=500)
