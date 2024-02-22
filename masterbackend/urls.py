@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import get_user_input
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # 👇 add your myapi app urls path here
-    path('api/', include('api.urls'))
+    path('api/', include('api.urls')),
+    path('', get_user_input, name='user_input'),
 ]
