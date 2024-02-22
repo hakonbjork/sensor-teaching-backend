@@ -19,7 +19,6 @@ def compute_emotion():
         _, frame = cap.read()
         _, emotion = er.predict_emotion(frame)
         if emotion:
-            print(emotion)
             MeasurementStates.set_state_from_emotion(emotion.lower())
         # util.write_csv("emotion.csv", [emotion])
         # only find emotion once every second

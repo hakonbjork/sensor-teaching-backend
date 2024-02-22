@@ -24,7 +24,7 @@ def number(request):
     number = fetch_and_process_number()
     return Response({'number': number})
 
-STATES = ['flow', 'stressed', 'disengaged', 'sensor issues']
+STATES = ['neutral', 'angry', 'fear', 'happy', 'sad', 'surprise', 'disgust', 'engagement', 'stress']
 IDS = range(1, 11)
 
 # Initialize with a default state for each ID

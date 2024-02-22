@@ -78,7 +78,6 @@ class DataHandler:
             # states.states[self.measurement_type] = normalized_measurement
 
             if (self.measurement_type == "engagement" or self.measurement_type == "stress"): # and normalized_measurement > 1.25:
-                print(f"{self.measurement_type}: {normalized_measurement}")
                 states.MeasurementStates.set_state_from_normalized_measurement(self.measurement_type, normalized_measurement)
             
             # if len(measurement) == 1:
