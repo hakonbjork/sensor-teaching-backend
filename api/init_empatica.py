@@ -1,13 +1,20 @@
 from .empatica import EmpaticaConnection
 from dataprocessing.handler import DataHandler
 from dataprocessing.measurements import (compute_arousal, compute_engagement, compute_emotional_regulation, compute_entertainment, compute_stress)
-from dataprocessing import states
+from dataprocessing.util import read_user_settings
 
 started = False
+    
 def init_empatica():
+    """ Connects to empatica and begnins the measurements """
+
     global started
 
-    """ Connects to empatica and begnins the measurements """
+    # blocks the thread until we have user settings
+    user_setings = read_user_settings()
+    if user_setings["empatica-used"].lower() != "true":
+        print("Empatica not in use, skipping empatica measurements")
+        return
 
     if started:
         return

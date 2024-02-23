@@ -4,7 +4,6 @@ import csv
 from dataprocessing import util
 
 
-
 def compute_emotion():
     """
     This function reads a frame from the webcam,
@@ -13,6 +12,9 @@ def compute_emotion():
     """
     import cv2 as cv
     import PyEmotion
+
+    # wait for user settings to begin
+    util.read_user_settings()
 
     # Open you default camera
     cap = cv.VideoCapture(0)

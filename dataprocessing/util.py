@@ -1,4 +1,5 @@
 import csv
+import time
 from .measurements.engagement import compute_engagement
 
 def to_list(x):
@@ -10,7 +11,7 @@ def to_list(x):
     except TypeError:
         return [x]
     
-def read_last_row_of_csv(filepath):
+def read_last_row_of_csv(filepath, boolean_only=True):
     """ Read the last row of a CSV file and return it as a dictionary.
     Expects the first row to be the header row, the first value to be timestamp and the rest to be boolean values."""
     # Initialize an empty dictionary to hold the last row data
@@ -27,9 +28,12 @@ def read_last_row_of_csv(filepath):
             return None
         
         # Convert values from strings to appropriate types (boolean in this case)
-        for key in last_row_data:
-            if key != 'timestamp':
-                last_row_data[key] = True if last_row_data[key].lower() == 'true' else False
+        if boolean_only:
+            for key in last_row_data:
+                if key != 'timestamp':
+                    last_row_data[key] = True if last_row_data[key].lower() == 'true' else False
+        else:
+            return last_row_data
         
         # remove the timestamp value
         if 'timestamp' in last_row_data:  
@@ -38,3 +42,11 @@ def read_last_row_of_csv(filepath):
         return last_row_data
     except FileNotFoundError:
         return None
+    
+def read_user_settings():
+    user_settings = read_last_row_of_csv("data/user_settings.csv", False)
+    if user_settings is None:
+        print("User settings not found, checking again in 5 seconds")
+        time.sleep(5)
+        return read_user_settings()
+    return user_settings

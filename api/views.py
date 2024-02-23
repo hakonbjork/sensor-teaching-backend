@@ -69,7 +69,10 @@ def get_real_state(request):
         engagement_dict = {'engagement': False}
     
     if emotions_dict is None:
-        emotions_dict = {'angry': False, 'fear': False, 'happy': False, 'sad': False, 'surprise': False, 'disgust': False}
+        emotions_dict = {'neutral': False, 'angry': False, 
+                         'fear': False, 'happy': False, 
+                         'sad': False, 'surprise': False, 
+                         'disgust': False}
 
     all_data.update(stress_dict)
     all_data.update(engagement_dict)
