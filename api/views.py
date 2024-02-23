@@ -1,11 +1,11 @@
 from django.shortcuts import render
 
 import random
-import csv
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from dataprocessing.services import append_clickstream, get_newest_clickstream_setence
+from dataprocessing.util import read_last_row_of_csv
 from .serializers import StateSerializer
 
 """
@@ -40,30 +40,31 @@ def add_clickstream(request):
     data = get_newest_clickstream_setence()
     return Response({'sentence': data})
 
-# Endre noe på denne?
 @api_view(['GET'])
 def get_real_state(request):
-    filepath = 'data/states.csv'  # Path to your CSV file
-    try:
-        # Initialize an empty dictionary to hold the last row data
-        last_row_data = {}
-        # Open the CSV file and read the last row
-        with open(filepath, 'r', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                last_row_data = row  # This will end up being the last row
-        
-        # Check if last_row_data is still empty, which means the file was empty
-        if not last_row_data:
-            return Response({"error": "No data found in CSV file."}, status=404)
-        
-        # Convert values from strings to appropriate types (boolean in this case)
-        for key in last_row_data:
-            last_row_data[key] = True if last_row_data[key].lower() == 'true' else False
-        
-        return Response(last_row_data)
-    except FileNotFoundError:
-        return Response({"error": "CSV file not found."}, status=404)
-    except Exception as e:
-        # Generic error handling
-        return Response({"error": str(e)}, status=500)
+    """ Combines the data from the three measurements (csv's) and returns it as a dictionary."""
+
+    # fiks caset at filene ikke eksisterer
+
+    all_data = {}
+    stress_dict = read_last_row_of_csv('data/stress.csv')
+    engagement_dict = read_last_row_of_csv('data/engagement.csv')
+    emotions_dict = read_last_row_of_csv('data/emotions.csv')
+
+    # må mulig endre hvordan det er hvis vi ikke har måling,
+    # men per nå settes det bare til False
+
+    if stress_dict is None:
+        stress_dict = {'stress': False}
+
+    if engagement_dict is None:
+        engagement_dict = {'engagement': False}
+    
+    if emotions_dict is None:
+        emotions_dict = {'angry': False, 'fear': False, 'happy': False, 'sad': False, 'surprise': False, 'disgust': False}
+
+    all_data.update(stress_dict)
+    all_data.update(engagement_dict)
+    all_data.update(emotions_dict)
+
+    return Response(all_data)

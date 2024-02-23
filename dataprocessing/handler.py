@@ -71,7 +71,7 @@ class DataHandler:
             normalized_measurement = np.dot(measurement, np.reciprocal(self.baseline)) / len(self.baseline)
 
             if (self.measurement_type == "engagement" or self.measurement_type == "stress"): # and normalized_measurement > 1.25:
-                self._set_state_from_normalized_measurement(self.measurement_type, normalized_measurement)
+                self._set_state_from_normalized_measurement(normalized_measurement)
             
             # if len(measurement) == 1:
             #     util.write_csv(self.measurement_path, [normalized_measurement])
@@ -80,7 +80,7 @@ class DataHandler:
             #                    [normalized_measurement, *measurement],
             #                    header_features=self.header_features)
 
-    def _set_state_from_normalized_measurement(self, type, nm):
+    def _set_state_from_normalized_measurement(self, nm):
         """ Set the state of the measurement based on the normalized measurement.
          If the normalized measurement is above a certain threshold, the state is set to True, else False. 
          This function will write either engagement, or stress, to its respective csv file.
@@ -99,7 +99,7 @@ class DataHandler:
 
             # Write the header only if the file did not exist or was empty
             if not file_exists:
-                header = ["time", "value"]
+                header = ["timestamp", self.measurement_type]
                 writer.writerow(header)
 
             # Write the updated states as a new row
