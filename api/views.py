@@ -31,6 +31,14 @@ def state_view(request):
     serializer = StateSerializer(random_states, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def get_mock_states(request):
+    states_list = []
+    for i in range(30):
+        random_states = _create_randomized_emotion(i + 1)
+        states_list.append(random_states)
+    return Response(states_list)
+
 @api_view(['GET', 'POST'])
 def add_clickstream(request):
     if request.method == 'POST':
@@ -68,3 +76,21 @@ def get_real_state(request):
     all_data.update(emotions_dict)
 
     return Response(all_data)
+
+def _create_randomized_emotion(id):
+    emotions = ["stress", "engagement", "neutral", "angry", "fear", "happy", "sad", "surprise", "disgust"]
+    
+    # Initialize all emotions to False
+    state = {emotion: False for emotion in emotions}
+    
+    # Randomly choose one to be True
+    true_emotion = random.choice(emotions)
+    state[true_emotion] = True
+    
+    # Construct the final dictionary
+    emotion_dict = {
+        "id": id,
+        "state": state
+    }
+    
+    return emotion_dict
