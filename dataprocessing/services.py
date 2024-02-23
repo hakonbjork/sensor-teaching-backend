@@ -1,15 +1,5 @@
 import datetime
 
-def get_number():
-    return 42
-
-def process_number(number):
-    return number * 2
-
-def fetch_and_process_number():
-    number = get_number()
-    return process_number(number)
-
 # en case kan være at denne blir altfor full, så kanskje limite hvor mye info den kan ha om gangen eller noe
 clickstream_data = []
 

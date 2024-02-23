@@ -1,9 +1,11 @@
 from collections import deque
 
 import numpy as np
-import datetime
+import os
+import csv
+import time
 
-from dataprocessing import util, states
+from dataprocessing import util
 
 class DataHandler:
     """
@@ -36,7 +38,7 @@ class DataHandler:
         self.window_step = window_step
         self.window_length = window_length
         self.measurement_func = measurement_func
-        self.measurement_path = measurement_path
+        self.measurement_path = "data/" + measurement_path
         self.measurement_type = measurement_type
         self.baseline_length = baseline_length
         self.baseline = None
@@ -67,18 +69,9 @@ class DataHandler:
         if self.data_counter % self.window_step == 0 and len(self.data_queue) == self.window_length:
             measurement = util.to_list(self.measurement_func(list(self.data_queue)))
             normalized_measurement = np.dot(measurement, np.reciprocal(self.baseline)) / len(self.baseline)
-            # print(f"measurement: {measurement}, normalized_measurement: {normalized_measurement}, path: {self.measurement_path}")
-            # could be useful to do this, or maybe json
-            # finne ut hvordan sende til frontend, midlertidig lagring her kan være bare å ha til en liste over hva alle statesene er
-            # det som må lagres over tid skal uansett gjøre det på en eller annen måte
-            # evt csv som de gjør her da men tror ikke vi trenger så "mye" lagring
-
-            # print(f"measurement: {measurement}, path: {self.measurement_path}, normalized_measurement: {normalized_measurement}")
-            print(f"{self.measurement_type}: {normalized_measurement}")
-            # states.states[self.measurement_type] = normalized_measurement
 
             if (self.measurement_type == "engagement" or self.measurement_type == "stress"): # and normalized_measurement > 1.25:
-                states.MeasurementStates.set_state_from_normalized_measurement(self.measurement_type, normalized_measurement)
+                self._set_state_from_normalized_measurement(self.measurement_type, normalized_measurement)
             
             # if len(measurement) == 1:
             #     util.write_csv(self.measurement_path, [normalized_measurement])
@@ -86,3 +79,29 @@ class DataHandler:
             #     util.write_csv(self.measurement_path,
             #                    [normalized_measurement, *measurement],
             #                    header_features=self.header_features)
+
+    def _set_state_from_normalized_measurement(self, type, nm):
+        """ Set the state of the measurement based on the normalized measurement.
+         If the normalized measurement is above a certain threshold, the state is set to True, else False. 
+         This function will write either engagement, or stress, to its respective csv file.
+         We use two files because a student can be both enagaged and stressed at the same time."""
+        
+        SWITCH_POINT = 1
+        is_state_high = float(nm) > SWITCH_POINT
+        self._write_measurement_to_csv(is_state_high)
+
+    def _write_measurement_to_csv(self, is_state_high):
+        filepath = self.measurement_path
+        file_exists = os.path.exists(filepath) and os.path.getsize(filepath) > 0
+
+        with open(filepath, 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+
+            # Write the header only if the file did not exist or was empty
+            if not file_exists:
+                header = ["time", "value"]
+                writer.writerow(header)
+
+            # Write the updated states as a new row
+            formated_is_state_high = util.to_list(is_state_high)
+            writer.writerow([time.time()] + formated_is_state_high)
