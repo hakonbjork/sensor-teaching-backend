@@ -140,4 +140,4 @@ GitHub.sublime-settings
 
 # Other
 *.pyc
-data/
+data/*
