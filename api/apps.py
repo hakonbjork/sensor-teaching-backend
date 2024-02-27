@@ -7,7 +7,8 @@ class ApiConfig(AppConfig):
 
     def ready(self) -> None:
         """ This will be called when the app is ready. It runs once on statup."""
-        print("should only happen once")
+        print("Starting application. This should only happen once")
+
         from .init_empatica import init_empatica
         from dataprocessing.measurements.emotion import compute_emotion
         p1 = Process(target=init_empatica)

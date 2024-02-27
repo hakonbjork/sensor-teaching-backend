@@ -5,7 +5,7 @@ import os
 import csv
 import time
 
-from dataprocessing import util
+from dataprocessing import firebase, util
 
 class DataHandler:
     """
@@ -14,7 +14,7 @@ class DataHandler:
     preprocessing the data,
     and calculating measurements from the data
     """
-    def __init__(self, measurement_func=None, measurement_path=None, measurement_type=None,
+    def __init__(self, id, measurement_func=None, measurement_path=None, measurement_type=None,
                  window_length=None, window_step=None,
                  baseline_length=None, header_features=[]):
         """
@@ -35,6 +35,7 @@ class DataHandler:
 
         self.data_queue = deque(maxlen=window_length)
         self.data_counter = 0
+        self.id = id
         self.window_step = window_step
         self.window_length = window_length
         self.measurement_func = measurement_func
@@ -88,6 +89,7 @@ class DataHandler:
         
         SWITCH_POINT = 1
         is_state_high = float(nm) > SWITCH_POINT
+        firebase.add_data(self.id, {self.measurement_type: is_state_high})
         self._write_measurement_to_csv(is_state_high)
 
     def _write_measurement_to_csv(self, is_state_high):
