@@ -46,7 +46,6 @@ def read_last_row_of_csv(filepath, boolean_only=True):
 def read_user_settings():
     user_settings = read_last_row_of_csv("data/user_settings.csv", False)
     if user_settings is None:
-        print("User settings not found, checking again in 5 seconds")
         time.sleep(5)
         return read_user_settings()
     return user_settings

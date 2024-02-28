@@ -1,7 +1,7 @@
 import time
 import os
 import csv
-from dataprocessing import util
+from dataprocessing import util, firebase
 
 
 def compute_emotion():
@@ -14,26 +14,32 @@ def compute_emotion():
     import PyEmotion
 
     # wait for user settings to begin
-    util.read_user_settings()
+    print("Emotions: waiting for user settings...")
+    user_settings = util.read_user_settings()
+    user_id = user_settings["id"]
 
     # Open you default camera
     cap = cv.VideoCapture(0)
     cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
     er = PyEmotion.DetectFace(device='cpu', gpu_id=0)
+    firebase.init_firebase()
     while True:
         _, frame = cap.read()
         _, emotion = er.predict_emotion(frame)
         if emotion:
-            _set_state_from_emotion(emotion.lower())
+            _set_state_from_emotion(user_id, emotion.lower())
         # only find emotion once every second
         time.sleep(1)
 
-def _set_state_from_emotion(new_emotion):
+def _set_state_from_emotion(id, new_emotion):
     """ Set the new emotion to True and the rest to False. """
+    if (new_emotion) == "noface":
+         return
     emotions = {"neutral": False, "angry": False, "fear": False, "happy": False, "sad": False, "surprise": False, "disgust": False}
     for e in emotions.keys():
         emotions[e] = False
     emotions[new_emotion] = True
+    firebase.add_data(id, emotions)
     _write_emotions_to_csv(emotions)
 
 def _write_emotions_to_csv(emotions):

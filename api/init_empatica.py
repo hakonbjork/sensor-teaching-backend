@@ -2,6 +2,7 @@ from .empatica import EmpaticaConnection
 from dataprocessing.handler import DataHandler
 from dataprocessing.measurements import (compute_arousal, compute_engagement, compute_emotional_regulation, compute_entertainment, compute_stress)
 from dataprocessing.util import read_user_settings
+from dataprocessing.firebase import init_firebase
 
 started = False
     
@@ -11,10 +12,15 @@ def init_empatica():
     global started
 
     # blocks the thread until we have user settings
-    user_setings = read_user_settings()
-    if user_setings["empatica-used"].lower() != "true":
+    print("Empatica: waiting for user settings...")
+    user_settings = read_user_settings()
+    if user_settings["empatica-used"].lower() != "true":
         print("Empatica not in use, skipping empatica measurements")
         return
+
+    user_id = user_settings["id"]
+    
+    init_firebase()
 
     if started:
         return
@@ -24,6 +30,7 @@ def init_empatica():
 
     # Instantiate the arousal data handler and subscribe to the api
     arousal_handler = DataHandler(
+        id=user_id,
         measurement_func=compute_arousal,
         measurement_path="arousal.csv",
         window_length=121,
@@ -34,6 +41,7 @@ def init_empatica():
 
     # Instantiate the engagement data handler and subscribe to the api
     engagement_handler = DataHandler(
+        id=user_id,
         measurement_func=compute_engagement,
         measurement_path="engagement.csv",
         measurement_type="engagement",
@@ -46,6 +54,7 @@ def init_empatica():
 
     # Instantiate the emotional regulation data handler and subscribe to the api
     emreg_handler = DataHandler(
+        id=user_id,
         measurement_func=compute_emotional_regulation,
         measurement_path="emotional_regulation.csv",
         window_length=12,
@@ -57,6 +66,7 @@ def init_empatica():
 
     # Instantiate the entertainment data handler and subscribe to the api
     entertainment_handler = DataHandler(
+        id=user_id,
         measurement_func=compute_entertainment,
         measurement_path="entertainment.csv",
         window_length=20,
@@ -69,6 +79,7 @@ def init_empatica():
 
     # Instantiate the stress data handler and subscribe to the api
     stress_handler = DataHandler(
+        id=user_id,
         measurement_func=compute_stress,
         measurement_path="stress.csv",
         measurement_type="stress",
