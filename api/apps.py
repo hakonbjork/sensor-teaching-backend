@@ -11,10 +11,13 @@ class ApiConfig(AppConfig):
 
         from .init_empatica import init_empatica
         from dataprocessing.measurements.emotion import compute_emotion
-        p1 = Process(target=init_empatica)
+        p1 = Process(target=compute_emotion)
         p1.start()
 
-        p2 = Process(target=compute_emotion)
+        p2 = Process(target=init_empatica, args=(1,))
         p2.start()
+
+        p3 = Process(target=init_empatica, args=(2,))
+        p3.start()
         
         return super().ready()

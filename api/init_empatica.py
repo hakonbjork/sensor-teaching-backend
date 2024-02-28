@@ -6,7 +6,7 @@ from dataprocessing.firebase import init_firebase
 
 started = False
     
-def init_empatica():
+def init_empatica(id):
     """ Connects to empatica and begnins the measurements """
 
     global started
@@ -17,9 +17,18 @@ def init_empatica():
     if user_settings["empatica-used"].lower() != "true":
         print("Empatica not in use, skipping empatica measurements")
         return
+    
+    id_mapping = {
+        1: "904ACD",
+        2: "D631CD"
+    }
 
     user_id_left = user_settings["id_left"]
     user_id_right = user_settings["id_right"]
+
+    # change this later to use actual id or something,
+    # for now only uses number from apps.py and the two devices we have
+    device_id = id_mapping[id]
     
     init_firebase()
 
@@ -42,7 +51,7 @@ def init_empatica():
 
     # Instantiate the engagement data handler and subscribe to the api
     engagement_handler = DataHandler(
-        id=user_id_left,
+        id=user_id_left if id == 1 else user_id_right,
         measurement_func=compute_engagement,
         measurement_path="engagement.csv",
         measurement_type="engagement",
@@ -80,7 +89,7 @@ def init_empatica():
 
     # Instantiate the stress data handler and subscribe to the api
     stress_handler = DataHandler(
-        id=user_id_left,
+        id=user_id_left if id == 1 else user_id_right,
         measurement_func=compute_stress,
         measurement_path="stress.csv",
         measurement_type="stress",
@@ -90,4 +99,4 @@ def init_empatica():
     )
     connection.add_subscriber(stress_handler, "TEMP")
 
-    connection.connect()
+    connection.connect(device_id)

@@ -27,15 +27,15 @@ class EmpaticaConnection:
         assert requested_data in self.subscribers.keys()
         self.subscribers[requested_data].append(data_handler)
 
-    def connect(self):
+    def connect(self, device_id):
         """ Connect to the Empatica E4 device."""
 
         self.socket.settimeout(5)
-        self._connect_empatica()
+        self._connect_empatica(device_id)
         self._subscribe_to_socket()
         self._stream()
 
-    def _connect_empatica(self):
+    def _connect_empatica(self, device_id):
         """ Create the socket connection and connect the device to the socket """
 
         print("trying to connect")
@@ -48,15 +48,12 @@ class EmpaticaConnection:
 
         print(response.decode('utf-8'))
 
-        if ("Empatica_E4" not in response.decode('utf-8')):
-            print ("found no empatica device, trying again after 10 seconds")
+        if (device_id not in response.decode('utf-8')):
+            print ("Did not find the wanted device, trying again after 10 seconds")
             time.sleep(10)
-            return self.connect()
+            return self.connect(device_id)
 
-        # first possible device id, needs to be changed if there are multiple devices
-        devicd_id = response.decode('utf-8').split(" ")[4]
-
-        self.socket.send(f"device_connect {devicd_id}\r\n".encode())
+        self.socket.send(f"device_connect {device_id}\r\n".encode())
         connected_response = self.socket.recv(self.buffer_size)
         print(connected_response.decode('utf-8'))
 
