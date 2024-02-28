@@ -8,18 +8,21 @@ def get_user_input(request):
         form = UserInputForm(request.POST)
         if form.is_valid():
             # Process the input here
-            user_id_left = form.cleaned_data['user_id_left']
-            user_id_right = form.cleaned_data['user_id_right']
+            user_id_1 = form.cleaned_data['user_id_1']
+            user_id_2 = form.cleaned_data['user_id_2']
+            user_id_3 = form.cleaned_data['user_id_3']
             empatica_used = form.cleaned_data['have_empatica']
-            _write_settings_to_csv(user_id_left, user_id_right, empatica_used)
-            return render(request, 'input_success.html', {'id_user_left': user_id_left, 'id_user_right': user_id_right, 'empatica_used': 'Ja' if empatica_used else 
+            _write_settings_to_csv(user_id_1, user_id_2, user_id_3, empatica_used)
+            return render(request, 'input_success.html', {'id_1': user_id_1, 'id_2': user_id_2, 
+                                                          'id_3': user_id_3 if user_id_3 else 'Ikke i bruk', 
+                                                          'empatica_used': 'Ja' if empatica_used else 
                                                           'Nei'})
     else:
         form = UserInputForm()
     
     return render(request, 'user_input_form.html', {'form': form})
 
-def _write_settings_to_csv(id_left, id_right, empatica_used):
+def _write_settings_to_csv(id1, id2, id3, empatica_used):
         filepath = 'data/user_settings.csv'
         file_exists = os.path.exists(filepath) and os.path.getsize(filepath) > 0
 
@@ -28,8 +31,8 @@ def _write_settings_to_csv(id_left, id_right, empatica_used):
 
             # Write the header only if the file did not exist or was empty
             if not file_exists:
-                header = ["id_left", "id_right", "empatica-used"]
+                header = ["user_id_1", "user_id_2", "user_id_3", "empatica-used"]
                 writer.writerow(header)
 
             # Write the user settings as a new row
-            writer.writerow([id_left, id_right, empatica_used])
+            writer.writerow([id1, id2, id3, empatica_used])

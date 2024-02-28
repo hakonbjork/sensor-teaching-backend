@@ -15,11 +15,15 @@ def compute_emotion():
     import PyEmotion
 
     # wait for user settings to begin
-    print("Emotions: waiting for user settings...")
     user_settings = util.read_user_settings()
-    print("Emotions: user settings found")
-    user_id_left = user_settings["id_left"]
-    user_id_right = user_settings["id_right"]
+    
+    user_id_1 = user_settings["user_id_1"]
+    user_id_2 = user_settings["user_id_2"]
+    user_id_3 = user_settings["user_id_3"]
+
+    ids = [user_id_1, user_id_2, user_id_3]
+
+    group_size = 3 if user_id_3 != "" else 2
 
     # Open you default camera
     cap = cv.VideoCapture(0)
@@ -29,30 +33,30 @@ def compute_emotion():
     while True:
         _, frame = cap.read()
         _, emotions = er.predict_emotion(frame)
-        _set_state_from_emotion(emotions, user_id_left, user_id_right)
+        _set_state_from_emotion(emotions, group_size, ids)
         # only find emotion once every second
         time.sleep(1)
 
-def _set_state_from_emotion(new_emotions, id_left, id_right):
+def _set_state_from_emotion(new_emotions, group_size, ids):
     """ Set the new emotion to True and the rest to False. """
     if (new_emotions) == "noface": # no face detected
          return
     
     if len(new_emotions) > 1: # several faces detected
-        left_emotion = new_emotions[0].lower()
-        right_emotion = new_emotions[1].lower()
-        left_emotion_dict = _compute_emotions_dict(left_emotion)
-        right_emotion_dict = _compute_emotions_dict(right_emotion)
-        _write_emotions_to_csv([left_emotion_dict, right_emotion_dict], 1, 2)
-        firebase.add_data(id_left, left_emotion_dict)
-        firebase.add_data(id_right, right_emotion_dict)
+
+        for i in range(group_size):
+            if i >= len(new_emotions): break # if we have more ids than faces detected
+            emotion = new_emotions[i].lower()
+            emotion_dict = _compute_emotions_dict(emotion)
+            firebase.add_data(ids[i], emotion_dict)
+            _write_emotions_to_csv(emotion_dict, ids[i])
     
     else: # only one face detected. assume this is the left person
         # maybe we should ignore this case, because we don't know which person it is
         emotion = new_emotions[0].lower()
         emotion_dict = _compute_emotions_dict(emotion)
-        firebase.add_data(id_left, emotion_dict)
-        _write_emotions_to_csv([emotion_dict], 1)
+        firebase.add_data(ids[0], emotion_dict)
+        _write_emotions_to_csv(emotion_dict, ids[0]) # defaults to the first id
         
 def _compute_emotions_dict(current_emotion):
     emotions = DEFAULT_EMOTIONS
@@ -61,29 +65,20 @@ def _compute_emotions_dict(current_emotion):
     emotions[current_emotion] = True
     return emotions
 
-def _write_emotions_to_csv(emotions, id1, id2=None):
-        filepath_base = 'data/emotions'
-        filepath_end = '.csv'
+def _write_emotions_to_csv(emotions, id):
+        filepath = f'data/emotions_{id}.csv'
+        file_exists = os.path.exists(filepath) and os.path.getsize(filepath) > 0
         timestamp = time.time()
-        ids = [id1, id2]
+        emotions_with_timestamp = {"timestamp": timestamp}
+        emotions_with_timestamp.update(emotions)
 
-        for i in range(len(emotions)):
-            if i > 1: break # we always have max two emotions
-            if i > 0 and id2 is None: break # if we only have one id, we can't write two emotions
+        with open(filepath, 'a', newline='') as csvfile:
+            fieldnames = ['timestamp'] + list(DEFAULT_EMOTIONS.keys())
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-            path = f"{filepath_base}_{ids[i]}{filepath_end}" # file name is based on the user id
-            file_exists = os.path.exists(path) and os.path.getsize(path) > 0
-            emotions_with_timestamp = {"timestamp": timestamp}
-            emotion_dict = emotions[i]
-            emotions_with_timestamp.update(emotion_dict)
+            # Write the header only if the file did not exist or was empty
+            if not file_exists:
+                writer.writeheader()
 
-            with open(path, 'a', newline='') as csvfile:
-                fieldnames = ['timestamp'] + list(DEFAULT_EMOTIONS.keys())
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-                # Write the header only if the file did not exist or was empty
-                if not file_exists:
-                    writer.writeheader()
-
-                # Write the updated emotions as a new row
-                writer.writerow(emotions_with_timestamp)
+            # Write the updated emotions as a new row
+            writer.writerow(emotions_with_timestamp)
