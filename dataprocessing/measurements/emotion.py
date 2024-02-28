@@ -18,7 +18,8 @@ def compute_emotion():
     print("Emotions: waiting for user settings...")
     user_settings = util.read_user_settings()
     print("Emotions: user settings found")
-    user_id = user_settings["id"]
+    user_id_left = user_settings["id_left"]
+    user_id_right = user_settings["id_right"]
 
     # Open you default camera
     cap = cv.VideoCapture(0)
@@ -28,11 +29,11 @@ def compute_emotion():
     while True:
         _, frame = cap.read()
         _, emotions = er.predict_emotion(frame)
-        _set_state_from_emotion(user_id, emotions)
+        _set_state_from_emotion(emotions, user_id_left, user_id_right)
         # only find emotion once every second
         time.sleep(1)
 
-def _set_state_from_emotion(id, new_emotions):
+def _set_state_from_emotion(new_emotions, id_left, id_right):
     """ Set the new emotion to True and the rest to False. """
     if (new_emotions) == "noface": # no face detected
          return
@@ -43,13 +44,14 @@ def _set_state_from_emotion(id, new_emotions):
         left_emotion_dict = _compute_emotions_dict(left_emotion)
         right_emotion_dict = _compute_emotions_dict(right_emotion)
         _write_emotions_to_csv([left_emotion_dict, right_emotion_dict], 1, 2)
-        firebase.add_data(1, left_emotion_dict)
-        firebase.add_data(2, right_emotion_dict)
+        firebase.add_data(id_left, left_emotion_dict)
+        firebase.add_data(id_right, right_emotion_dict)
     
-    else: # only one face detected
+    else: # only one face detected. assume this is the left person
+        # maybe we should ignore this case, because we don't know which person it is
         emotion = new_emotions[0].lower()
         emotion_dict = _compute_emotions_dict(emotion)
-        firebase.add_data(id, emotion_dict)
+        firebase.add_data(id_left, emotion_dict)
         _write_emotions_to_csv([emotion_dict], 1)
         
 def _compute_emotions_dict(current_emotion):
