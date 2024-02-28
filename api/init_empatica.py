@@ -18,7 +18,8 @@ def init_empatica():
         print("Empatica not in use, skipping empatica measurements")
         return
 
-    user_id = user_settings["id"]
+    user_id_left = user_settings["id_left"]
+    user_id_right = user_settings["id_right"]
     
     init_firebase()
 
@@ -30,7 +31,7 @@ def init_empatica():
 
     # Instantiate the arousal data handler and subscribe to the api
     arousal_handler = DataHandler(
-        id=user_id,
+        id=user_id_left,
         measurement_func=compute_arousal,
         measurement_path="arousal.csv",
         window_length=121,
@@ -41,7 +42,7 @@ def init_empatica():
 
     # Instantiate the engagement data handler and subscribe to the api
     engagement_handler = DataHandler(
-        id=user_id,
+        id=user_id_left,
         measurement_func=compute_engagement,
         measurement_path="engagement.csv",
         measurement_type="engagement",
@@ -54,7 +55,7 @@ def init_empatica():
 
     # Instantiate the emotional regulation data handler and subscribe to the api
     emreg_handler = DataHandler(
-        id=user_id,
+        id=user_id_left,
         measurement_func=compute_emotional_regulation,
         measurement_path="emotional_regulation.csv",
         window_length=12,
@@ -66,7 +67,7 @@ def init_empatica():
 
     # Instantiate the entertainment data handler and subscribe to the api
     entertainment_handler = DataHandler(
-        id=user_id,
+        id=user_id_left,
         measurement_func=compute_entertainment,
         measurement_path="entertainment.csv",
         window_length=20,
@@ -79,7 +80,7 @@ def init_empatica():
 
     # Instantiate the stress data handler and subscribe to the api
     stress_handler = DataHandler(
-        id=user_id,
+        id=user_id_left,
         measurement_func=compute_stress,
         measurement_path="stress.csv",
         measurement_type="stress",
