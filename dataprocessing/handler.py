@@ -39,7 +39,6 @@ class DataHandler:
         self.window_step = window_step
         self.window_length = window_length
         self.measurement_func = measurement_func
-        self.measurement_path = "data/" + measurement_path
         self.measurement_type = measurement_type
         self.baseline_length = baseline_length
         self.baseline = None
@@ -93,7 +92,7 @@ class DataHandler:
         self._write_measurement_to_csv(is_state_high)
 
     def _write_measurement_to_csv(self, is_state_high):
-        filepath = self.measurement_path
+        filepath = "data/" + self.measurement_type + "_" + self.id + ".csv"
         file_exists = os.path.exists(filepath) and os.path.getsize(filepath) > 0
 
         with open(filepath, 'a', newline='') as csvfile:
