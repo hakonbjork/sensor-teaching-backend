@@ -16,6 +16,8 @@ def compute_emotion():
 
     # wait for user settings to begin
     user_settings = util.read_user_settings()
+
+    print("Emotion: user settings found, starting measurement")
     
     user_id_1 = user_settings["user_id_1"]
     user_id_2 = user_settings["user_id_2"]
@@ -48,15 +50,15 @@ def _set_state_from_emotion(new_emotions, group_size, ids):
             if i >= len(new_emotions): break # if we have more ids than faces detected
             emotion = new_emotions[i].lower()
             emotion_dict = _compute_emotions_dict(emotion)
-            firebase.add_data(ids[i], emotion_dict)
-            _write_emotions_to_csv(emotion_dict, ids[i])
+            firebase.add_data(ids[i], emotion, 1.0) # this number needs to change, see what mr K finds out
+            # _write_emotions_to_csv(emotion_dict, ids[i])
     
     else: # only one face detected. assume this is the left person
         # maybe we should ignore this case, because we don't know which person it is
         emotion = new_emotions[0].lower()
         emotion_dict = _compute_emotions_dict(emotion)
-        firebase.add_data(ids[0], emotion_dict)
-        _write_emotions_to_csv(emotion_dict, ids[0]) # defaults to the first id
+        firebase.add_data(ids[0], emotion, 1.0) # this number needs to change, see what mr K finds out
+        # _write_emotions_to_csv(emotion_dict, ids[0]) # defaults to the first id
         
 def _compute_emotions_dict(current_emotion):
     emotions = DEFAULT_EMOTIONS
