@@ -88,8 +88,8 @@ class DataHandler:
         
         SWITCH_POINT = 1
         is_state_high = float(nm) > SWITCH_POINT
-        firebase.add_data(self.id, {self.measurement_type: is_state_high})
-        self._write_measurement_to_csv(is_state_high)
+        firebase.add_data(self.id, self.measurement_type, float(nm))
+        # self._write_measurement_to_csv(is_state_high)
 
     def _write_measurement_to_csv(self, is_state_high):
         filepath = "data/" + self.measurement_type + "_" + self.id + ".csv"
