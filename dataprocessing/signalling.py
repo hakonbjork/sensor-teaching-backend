@@ -6,6 +6,9 @@ def compute_signalling(user_id, start_time):
      For the chosen user_id, it will fetch all the data from the last 5 minutes,
      and compute the signalling based on the data. The signalling will be sent to firebase,
      for now only as booleans based on the values calculated in this function."""
+    
+    STRESS_ENGAGEMENT_FRACTION_THRESHOLD = 0.7
+    EMOTION_FRACTION_THRESHOLD = 0.4
 
     # might also use csv files here
     user_data = firebase.get_user_data(user_id)
@@ -69,7 +72,7 @@ def compute_signalling(user_id, start_time):
             
             fraction_of_total = high_values / total_count
             # print(f"user_id {user_id}: fraction of {measurement} is {fraction_of_total}")
-            signal_true = fraction_of_total > 0.7 # random threshold, can be changed
+            signal_true = fraction_of_total > STRESS_ENGAGEMENT_FRACTION_THRESHOLD # random threshold, can be changed
             firebase.update_signalling_data(user_id, measurement, signal_true)
 
         # the emotions from camera
@@ -82,7 +85,7 @@ def compute_signalling(user_id, start_time):
 
             # print(f"user_id {user_id}: fraction of {measurement} is {fraction_of_total}")
 
-            signal_true = fraction_of_total > 0.4 # random threshold, can be changed
+            signal_true = fraction_of_total > EMOTION_FRACTION_THRESHOLD # random threshold, can be changed
             firebase.update_signalling_data(user_id, measurement, signal_true)
 
 def start_computing_signalling(user_id):
