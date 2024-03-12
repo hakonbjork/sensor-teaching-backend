@@ -98,4 +98,4 @@ def init_empatica(id):
     )
     connection.add_subscriber(stress_handler, "TEMP")
 
-    connection.connect(device_id)
+    connection.connect(device_id, id)

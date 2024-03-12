@@ -80,6 +80,9 @@ def compute_signalling(user_id, start_time):
             # this calculation will look at how many seconds of the last 5 minutes that the user was for example sad
             # here, we also have to consider that if less than 300 seconds have passed, have to calculate based on start time
 
+            if total_emotion_entries == 0:
+                continue
+
             count_high_values = sum(1 for item in data.values() if item != "" and item['time'] > relevant_period_start and item['value'] >= 1)
             fraction_of_total = count_high_values / total_emotion_entries
 
