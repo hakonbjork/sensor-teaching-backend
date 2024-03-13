@@ -50,14 +50,14 @@ def _set_state_from_emotion(new_emotions, group_size, ids):
             if i >= len(new_emotions): break # if we have more ids than faces detected
             emotion = new_emotions[i].lower()
             emotion_dict = _compute_emotions_dict(emotion)
-            firebase.add_data(ids[i], emotion, 1.0) # this number needs to change, see what mr K finds out
+            firebase.add_measurement_data(ids[i], emotion, 1.0) # this number needs to change, see what mr K finds out
             # _write_emotions_to_csv(emotion_dict, ids[i])
     
     else: # only one face detected. assume this is the left person
         # maybe we should ignore this case, because we don't know which person it is
         emotion = new_emotions[0].lower()
         emotion_dict = _compute_emotions_dict(emotion)
-        firebase.add_data(ids[0], emotion, 1.0) # this number needs to change, see what mr K finds out
+        firebase.add_measurement_data(ids[0], emotion, 1.0) # this number needs to change, see what mr K finds out
         # _write_emotions_to_csv(emotion_dict, ids[0]) # defaults to the first id
         
 def _compute_emotions_dict(current_emotion):

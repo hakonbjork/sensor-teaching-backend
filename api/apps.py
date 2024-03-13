@@ -19,6 +19,7 @@ def _start_processes():
     from .init_empatica import init_empatica
     from dataprocessing.measurements.emotion import compute_emotion
     from dataprocessing.util import read_user_settings
+    from dataprocessing.signalling import start_computing_signalling
 
     user_settings = read_user_settings()
     print("User settings found")
@@ -35,5 +36,7 @@ def _start_processes():
     p1.start()
 
     for i in range(group_size):
-        p = Process(target=init_empatica, args=(ids[i],))
-        p.start()
+        p1 = Process(target=start_computing_signalling, args=(ids[i],))
+        p1.start()
+        p2 = Process(target=init_empatica, args=(ids[i],))
+        p2.start()

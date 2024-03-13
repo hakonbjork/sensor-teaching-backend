@@ -15,7 +15,7 @@ def init_firebase():
         'databaseURL': 'https://sensor-teaching-default-rtdb.europe-west1.firebasedatabase.app/'
     })
 
-def add_data(user_id, measurement, value):
+def add_measurement_data(user_id, measurement, value):
 
     # As an admin, the app has access to read and write all data, regradless of Security Rules
     ref = db.reference('sensor-data')
@@ -37,4 +37,18 @@ def add_data(user_id, measurement, value):
         "value": value
     })
 
+def update_signalling_data(user_id, measurement, value):
+
+    ref = db.reference('signalling-data')
+    user_exists = ref.child(f"{user_id}").get()
     
+    if (not user_exists):
+        ref.child(f"{user_id}").set({measurement: value})
+
+    else:
+        ref.child(f"{user_id}").update({measurement: value})
+
+def get_user_data(user_id):
+    ref = db.reference('sensor-data')
+    user_data = ref.child(f"{user_id}").get()
+    return user_data
