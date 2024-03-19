@@ -68,10 +68,13 @@ class DataHandler:
         """ Calculates a measurement and writes to csv if we have received enough data points """
         if self.data_counter % self.window_step == 0 and len(self.data_queue) == self.window_length:
             measurement = util.to_list(self.measurement_func(list(self.data_queue)))
-            normalized_measurement = np.dot(measurement, np.reciprocal(self.baseline)) / len(self.baseline)
-
-            if (self.measurement_type == "engagement" or self.measurement_type == "stress"): # and normalized_measurement > 1.25:
-                self._set_state_from_normalized_measurement(normalized_measurement)
+            try:
+                normalized_measurement = np.dot(measurement, np.reciprocal(self.baseline)) / len(self.baseline)
+                if (self.measurement_type == "engagement" or self.measurement_type == "stress"):
+                    self._set_state_from_normalized_measurement(normalized_measurement)
+            except Warning as w: # If we get a Runtime warning (divide by zero), we just skip the measurement
+                # print(f"Warning/Error calculating normalized measurement: {w}, returning")
+                return
             
             # if len(measurement) == 1:
             #     util.write_csv(self.measurement_path, [normalized_measurement])

@@ -1,5 +1,6 @@
 import time
 from . import firebase
+import numpy as np
 
 def compute_signalling(user_id, start_time):
     """ This function will compute signalling based on the firebase data.
@@ -7,8 +8,8 @@ def compute_signalling(user_id, start_time):
      and compute the signalling based on the data. The signalling will be sent to firebase,
      for now only as booleans based on the values calculated in this function."""
     
-    STRESS_ENGAGEMENT_FRACTION_THRESHOLD = 0.7
-    EMOTION_FRACTION_THRESHOLD = 0.4
+    EMOTION_FRACTION_THRESHOLD = 0.35
+    HAPPY_FRACTION_THRESHOLD = 0.08
 
     # might also use csv files here
     user_data = firebase.get_user_data(user_id)
@@ -53,27 +54,40 @@ def compute_signalling(user_id, start_time):
 
         # the stress and engagement from empatica
         if (measurement == "stress" or measurement == "engagement"):
-            total_count = 0
-            high_values = 0
+            all_values = [item for item in data.values() if item != ""]
+            std_deviation = float(np.std([item['value'] for item in all_values]))
+            mean_value = float(np.mean([item['value'] for item in all_values]))
+            window_count = 0
+            window_sum = 0
+            one_minute_ago = current_time - 60
 
-            # this calculation will look at how many of the values captured the last 5 minutes are high (over 1)
+            # this calculation will find the mean and the standard deviation from all time,
+            # and then look at the current window (last minute) to see if the mean value is significantly different
             for item in data.values():
-                # if we have a buggy instance( instance with no data), ignore it
+                # if we have a buggy instance (instance with no data), ignore it
                 # might also change other code so that we don't get these instances
                 if item == "":
                     continue
-                if item['time'] > five_minutes_ago:
-                    total_count += 1
-                    if item['value'] > 1:
-                        high_values += 1
+                if item['time'] > one_minute_ago:
+                    window_count += 1
+                    window_sum += item['value']
 
-            if (total_count == 0):
+            if (window_count == 0):
                 continue
-            
-            fraction_of_total = high_values / total_count
-            # print(f"user_id {user_id}: fraction of {measurement} is {fraction_of_total}")
-            signal_true = fraction_of_total > STRESS_ENGAGEMENT_FRACTION_THRESHOLD # random threshold, can be changed
-            firebase.update_signalling_data(user_id, measurement, signal_true)
+
+            mean_window_value = float(window_sum / window_count)
+
+            if (measurement == "engagement"):
+                signal_true = mean_window_value < mean_value - std_deviation
+                print(f"mean window value: {mean_window_value}, mean value: {mean_value}, std deviation: {std_deviation}")
+                print(f"engagement signal: {signal_true}")
+                firebase.update_signalling_data(user_id, measurement, signal_true)
+
+            else: # stress
+                signal_true = mean_window_value > mean_value + std_deviation
+                print(f"mean window value: {mean_window_value}, mean value: {mean_value}, std deviation: {std_deviation}")
+                print("stress signal: ", signal_true)
+                firebase.update_signalling_data(user_id, measurement, signal_true)
 
         # the emotions from camera
         else:
@@ -88,8 +102,13 @@ def compute_signalling(user_id, start_time):
 
             # print(f"user_id {user_id}: fraction of {measurement} is {fraction_of_total}")
 
-            signal_true = fraction_of_total > EMOTION_FRACTION_THRESHOLD # random threshold, can be changed
-            firebase.update_signalling_data(user_id, measurement, signal_true)
+            if (measurement == "happy"):
+                signal_true = fraction_of_total < HAPPY_FRACTION_THRESHOLD # if less happy than threshold, signal true
+                firebase.update_signalling_data(user_id, measurement, signal_true) 
+
+            else:
+                signal_true = fraction_of_total > EMOTION_FRACTION_THRESHOLD # for sad emotions, signal if more than threshold
+                firebase.update_signalling_data(user_id, measurement, signal_true) 
 
 def start_computing_signalling(user_id):
     firebase.init_firebase()
