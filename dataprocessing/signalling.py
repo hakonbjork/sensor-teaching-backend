@@ -79,14 +79,10 @@ def compute_signalling(user_id, start_time):
 
             if (measurement == "engagement"):
                 signal_true = mean_window_value < mean_value - std_deviation
-                print(f"mean window value: {mean_window_value}, mean value: {mean_value}, std deviation: {std_deviation}")
-                print(f"engagement signal: {signal_true}")
                 firebase.update_signalling_data(user_id, measurement, signal_true)
 
             else: # stress
                 signal_true = mean_window_value > mean_value + std_deviation
-                print(f"mean window value: {mean_window_value}, mean value: {mean_value}, std deviation: {std_deviation}")
-                print("stress signal: ", signal_true)
                 firebase.update_signalling_data(user_id, measurement, signal_true)
 
         # the emotions from camera
