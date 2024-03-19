@@ -52,8 +52,11 @@ def compute_signalling(user_id, start_time):
 
         data = user_data[measurement] # data for the current measurement
 
-        # the stress and engagement from empatica
         if (measurement == "stress" or measurement == "engagement"):
+            # the stress and engagement from empatica
+            # this calculation will find the mean and the standard deviation from all time,
+            # and then look at the current window (last minute) to see if the mean value is significantly different
+
             all_values = [item for item in data.values() if item != ""]
             std_deviation = float(np.std([item['value'] for item in all_values]))
             mean_value = float(np.mean([item['value'] for item in all_values]))
@@ -61,8 +64,6 @@ def compute_signalling(user_id, start_time):
             window_sum = 0
             one_minute_ago = current_time - 60
 
-            # this calculation will find the mean and the standard deviation from all time,
-            # and then look at the current window (last minute) to see if the mean value is significantly different
             for item in data.values():
                 # if we have a buggy instance (instance with no data), ignore it
                 # might also change other code so that we don't get these instances
@@ -87,7 +88,8 @@ def compute_signalling(user_id, start_time):
 
         # the emotions from camera
         else:
-            # this calculation will look at how many seconds of the last 5 minutes that the user was for example sad
+            # this calculation will look at how many emotion instances of the last 5 minutes that the user was for example sad
+            # we look at the fraction of each of the emotion measurements, and signal if abow/below a certain threshold
             # here, we also have to consider that if less than 300 seconds have passed, have to calculate based on start time
 
             if total_emotion_entries == 0:
