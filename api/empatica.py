@@ -112,11 +112,12 @@ class EmpaticaConnection:
                     elif name == "E4_Ibi":
                         self._send_data_to_subscriber("IBI", data)
 
-            # in testing, https://stackoverflow.com/questions/10019456/usage-of-socket-settimeout
+            # in testing, this did usually not mean that is lost connection,
+            # so should not need to reconnect
             except socket.timeout:
-                print("Socket timeout, reconnecting in 10 sec...")
-                time.sleep(10)
-                return self.connect()
+                print("Socket timeout, hopefully does not disconnect")
+                # time.sleep(10)
+                # return self.connect()
             
     def _send_data_to_subscriber(self, name, data):
         """
