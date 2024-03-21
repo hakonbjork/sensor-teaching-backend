@@ -20,16 +20,18 @@ def init_empatica(id):
     
     user_id_1 = user_settings["user_id_1"]
     user_id_2 = user_settings["user_id_2"]
-    user_id_3 = user_settings["user_id_3"]
     
-    # change these to be actual hardcoded numbers later
     id_mapping = {
-        user_id_1: "904ACD",
-        user_id_2: "D631CD",
-        user_id_3: "ABCDEF" # not an actual id
+        16: "414D5C",
+        18: "A333CD",
+        20: "C13A64"
     }
 
-    device_id = id_mapping[id]
+    device_id = id_mapping.get(id, "0",)
+
+    if device_id == "0":
+        print(f"Empatica: device id not found in mapping for user {id}, skipping empatica measurements for that user")
+        return
     
     init_firebase()
 
