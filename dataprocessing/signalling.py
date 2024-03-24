@@ -29,7 +29,7 @@ def compute_signalling(user_id, start_time):
     # if five minutes have not passed, figure out how many seconds have passed and use start_time
     elapsed_seconds = current_time - start_time
     is_over_five_minutes = elapsed_seconds > 300
-    relevant_period_start  = five_minutes_ago if is_over_five_minutes else start_time
+    five_min_ago_or_start_time  = five_minutes_ago if is_over_five_minutes else start_time
 
     # for testing, since there might not be data available last 5 minutes
     mock_time = 1709730200
@@ -37,13 +37,16 @@ def compute_signalling(user_id, start_time):
 
     # calculate the total number of emotion entries in the last 5 minutes
     # to later find the fraction of for example sad entries
-    total_emotion_entries = 0
+    emotion_entries_last_five_min = 0
+    sad_entries_last_five_min = 0
     emotions = ["happy", "sad", "angry", "disgust", "fear", "surprise", "noface", "neutral"]
     for emotion in emotions:
         if (not emotion in user_data):
             continue
         emotion_data = user_data[emotion]
-        total_emotion_entries += sum(1 for item in emotion_data.values() if item != "" and item['time'] > relevant_period_start and item['value'] >= 1)    
+        emotion_entries = sum(1 for item in emotion_data.values() if item != "" and item['time'] > five_min_ago_or_start_time and item['value'] >= 1)
+        emotion_entries_last_five_min += emotion_entries
+        if (emotion == "sad"): sad_entries_last_five_min += emotion_entries
 
     for measurement in measurements:
         if (not measurement in user_data):
@@ -86,17 +89,43 @@ def compute_signalling(user_id, start_time):
                 signal_true = mean_window_value > mean_value + std_deviation
                 firebase.update_signalling_data(user_id, measurement, signal_true)
 
-        # the emotions from camera
+        elif (measurement == "happy"):
+            continue # ignore happy, should not matter if they smile too little
+        
+        elif (measurement == "sad"):
+            timestamps = [item['time'] for item in data.values() if item != "" and item['time'] > start_time]
+            if (len(timestamps) == 0): continue
+
+            # Convert timestamps to minutes since the first timestamp
+            normalized_minutes = (np.array(timestamps) - np.min(timestamps)) // 60
+
+            # Get the unique minutes and count of events in each minute
+            unique_minutes, counts_per_minute = np.unique(normalized_minutes, return_counts=True)
+
+            # Calculate the mean and standard deviation
+            mean_frequency = float(np.mean(counts_per_minute))
+            std_deviation = float(np.std(counts_per_minute))
+
+            min_since_start = (time.time() - start_time) // 60 + 1
+            mean_last_five_min = sad_entries_last_five_min / min(min_since_start, 5)
+
+            signal_true = mean_last_five_min > mean_frequency + std_deviation
+
+            print(f"sad: mean all time: {mean_frequency}, std all time: {std_deviation}")
+            print(f"sad: mean last 5 min: {mean_last_five_min}, signal_true: {signal_true}")
+            firebase.update_signalling_data(user_id, measurement, signal_true)
+
+        # the emotions from camera, except from happy and sad
         else:
             # this calculation will look at how many emotion instances of the last 5 minutes that the user was for example sad
             # we look at the fraction of each of the emotion measurements, and signal if abow/below a certain threshold
             # here, we also have to consider that if less than 300 seconds have passed, have to calculate based on start time
 
-            if total_emotion_entries == 0:
+            if emotion_entries_last_five_min == 0:
                 continue
 
-            count_high_values = sum(1 for item in data.values() if item != "" and item['time'] > relevant_period_start and item['value'] >= 1)
-            fraction_of_total = count_high_values / total_emotion_entries
+            count_high_values = sum(1 for item in data.values() if item != "" and item['time'] > five_min_ago_or_start_time and item['value'] >= 1)
+            fraction_of_total = count_high_values / emotion_entries_last_five_min
 
             # print(f"user_id {user_id}: fraction of {measurement} is {fraction_of_total}")
 
