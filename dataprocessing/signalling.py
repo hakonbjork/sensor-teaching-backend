@@ -110,9 +110,6 @@ def compute_signalling(user_id, start_time):
             mean_last_five_min = sad_entries_last_five_min / min(min_since_start, 5)
 
             signal_true = mean_last_five_min > mean_frequency + std_deviation
-
-            print(f"sad: mean all time: {mean_frequency}, std all time: {std_deviation}")
-            print(f"sad: mean last 5 min: {mean_last_five_min}, signal_true: {signal_true}")
             firebase.update_signalling_data(user_id, measurement, signal_true)
 
         # the emotions from camera, except from happy and sad
