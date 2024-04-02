@@ -33,7 +33,7 @@ class EmpaticaConnection:
         self.socket.settimeout(5)
         self._connect_empatica(device_id, user_id)
         self._subscribe_to_socket()
-        self._stream()
+        self._stream(device_id, user_id)
 
     def _connect_empatica(self, device_id, user_id):
         """ Create the socket connection and connect the device to the socket """
@@ -64,7 +64,7 @@ class EmpaticaConnection:
         else:
             print ("could not connect to empatica, trying again after 10 seconds")
             time.sleep(10)
-            return self.connect()
+            return self.connect(device_id, user_id)
 
     def _subscribe_to_socket(self):
             """ Subscribe to the data on the socket connection """
@@ -83,7 +83,7 @@ class EmpaticaConnection:
             self.socket.send("pause OFF\r\n".encode())
             self.socket.recv(self.buffer_size)
 
-    def _stream(self):
+    def _stream(self, device_id, user_id):
         """ Continuously receive data from the socket connection """
 
         print("streaming started")
@@ -93,11 +93,11 @@ class EmpaticaConnection:
                 if "connection lost to device" in response:
                     print("Lost connection to device, reconnecting in 10 sec...")
                     time.sleep(10)
-                    return self.connect()
+                    return self.connect(device_id, user_id)
                 if "turned off via button" in response:
                     print("The wristband was turned off, reconnecting in 10 sec...")
                     time.sleep(10)
-                    return self.connect()
+                    return self.connect(device_id, user_id)
 
                 samples = response.split("\n")
                 for i in range(len(samples) - 1):
@@ -115,7 +115,7 @@ class EmpaticaConnection:
             except socket.timeout:
                 print("Socket timeout, reconnecting in 10 sec...")
                 time.sleep(10)
-                return self.connect()
+                return self.connect(device_id, user_id)
             
     def _send_data_to_subscriber(self, name, data):
         """
