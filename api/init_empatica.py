@@ -22,12 +22,12 @@ def init_empatica(id):
     user_id_2 = user_settings["user_id_2"]
     
     id_mapping = {
-        "D1": "904ACD",
-        "D2": "D631CD",
-        "E1": "414D5C",
-        "E2": "A333CD",
-        "F1": "C13A64",
-        "F2": "322C64",
+        "H1": "904ACD",
+        "H2": "D631CD",
+        "I1": "414D5C",
+        "I2": "A333CD",
+        "L1": "C13A64",
+        "L2": "322C64",
     }
 
     device_id = id_mapping.get(id, "0",)
