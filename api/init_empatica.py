@@ -24,12 +24,12 @@ def init_empatica(id):
     
     # change these to be actual hardcoded numbers later
     id_mapping = {
-        "A1": "904ACD",
-        "A2": "D631CD",
-        "B1": "414D5C",
-        "B2": "A333CD",
-        "C1": "C13A64",
-        "C2": "322C64",
+        "D1": "904ACD",
+        "D2": "D631CD",
+        "E1": "414D5C",
+        "E2": "A333CD",
+        "F1": "C13A64",
+        "F2": "322C64",
     }
 
     device_id = id_mapping[id]
