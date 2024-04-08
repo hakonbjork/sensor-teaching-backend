@@ -4,9 +4,11 @@ import numpy as np
 import os
 import csv
 import time
+import warnings
 
 from dataprocessing import firebase, util
 
+warnings.filterwarnings("error", category=RuntimeWarning) # to be able to catch the divide by zero warning
 class DataHandler:
     """
     Class that subscribes to a specific raw data stream,
@@ -72,8 +74,8 @@ class DataHandler:
                 normalized_measurement = np.dot(measurement, np.reciprocal(self.baseline)) / len(self.baseline)
                 if (self.measurement_type == "engagement" or self.measurement_type == "stress"):
                     self._set_state_from_normalized_measurement(normalized_measurement)
-            except Warning as w: # If we get a Runtime warning (divide by zero), we just skip the measurement
-                # print(f"Warning/Error calculating normalized measurement: {w}, returning")
+            except RuntimeWarning as w: # If we get a Runtime warning (divide by zero), we just skip the measurement
+                print(f"Warning/Error calculating normalized measurement for {self.measurement_type} for user {self.id} {w}, returning")
                 return
             
             # if len(measurement) == 1:
