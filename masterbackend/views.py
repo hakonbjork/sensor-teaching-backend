@@ -14,9 +14,9 @@ def get_user_input(request):
             empatica_used = form.cleaned_data['have_empatica']
             _write_settings_to_csv(user_id_1, user_id_2, user_id_3, empatica_used)
             return render(request, 'input_success.html', {'id_1': user_id_1, 'id_2': user_id_2, 
-                                                          'id_3': user_id_3 if user_id_3 else 'Ikke i bruk', 
-                                                          'empatica_used': 'Ja' if empatica_used else 
-                                                          'Nei'})
+                                                          'id_3': user_id_3 if user_id_3 else 'Not in use', 
+                                                          'empatica_used': 'Yes' if empatica_used else 
+                                                          'No'})
     else:
         form = UserInputForm()
     
