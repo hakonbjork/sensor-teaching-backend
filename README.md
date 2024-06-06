@@ -1,4 +1,4 @@
-# Teacher dashboard - Backend
+# Sensor Teaching - Backend
 
 This app provides a real-time dashboard for teachers to obtain a better overview of students in a class. The system works by continuously measuring physiological data from smart wristbands and web cameras and displaying relevant information visually on the dashboard. This is the frontend part of the application and contains a dashboard created in React using Typescript. To use the full application, the backend needs to run as well. This system is currently configured to use Firebase Realtime Database. Other databases can be used, but this requires modifications of the code to ensure compatibility with the chosen database technology.
 
@@ -119,12 +119,12 @@ The following steps has to be done for each PC going to run the backend. The cod
     
     </details>
 
-  10. Create an empty 'data' folder in the root level of the repository. This folder will contain the ids for the PC in use. ((kanskje noe vi burde fikse))
+  10. Create an empty 'data' folder in the root level of the repository. This folder will contain the ids for the PC in use.
 
 ### Running the Backend
 
   1. Run the backend using `python manage.py runserver --noreload`
-  2. Navigate to [localhost:8000](http://localhost:8000/) on the PC to specify the ids that PC will use. This is equivalent to the ids of the two students working on that       PC ((burde fikse formet så det alltid bare er to id'er))
+  2. Navigate to [localhost:8000](http://localhost:8000/) on the PC to specify the ids that PC will use. This is equivalent to the ids of the two students working on that PC
   3. After the form containing ids are sent in, the system will begin gathering data and sending information to the database.
 
 ## Authors
